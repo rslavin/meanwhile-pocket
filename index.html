@@ -9,10 +9,49 @@
     <link rel="apple-touch-icon" href="./icon.svg" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <title>Meanwhile, in your pocket</title>
-    <script type="module" crossorigin src="./assets/pocket-B_YQPAJf.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/pocket-ChHOjlBp.css">
+    <script type="module" crossorigin src="./assets/pocket-CAXX6BiP.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/pocket-CO-WKAwD.css">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><p id="boot" style="margin: 40vh 24px 0; text-align: center; font: 16px/1.4 Georgia, serif; color: #74695a">Unpacking…</p></div>
+    <script>
+      // If the app's own files do not arrive, say so and fetch the page again, once, past any copy
+      // kept on the way. This happens for a few minutes after an update: the page that comes back
+      // is the old one, and the files it asks for are already gone.
+      (function () {
+        var KEY = 'meanwhile.pocket.retry';
+        function go() {
+          try { sessionStorage.setItem(KEY, String(Date.now())); } catch (e) {}
+          location.replace(location.pathname + '?v=' + Date.now() + location.hash);
+        }
+        function again() {
+          var el = document.getElementById('boot');
+          if (!el) return;
+          var last = 0;
+          try { last = Number(sessionStorage.getItem(KEY)) || 0; } catch (e) {}
+          // Tried a moment ago already: ask, rather than go round and round.
+          if (Date.now() - last < 60000) {
+            el.textContent = 'This did not load. Tap here to try again.';
+            el.onclick = go;
+          } else go();
+        }
+        // Anything that goes wrong before the app is up is written where it can be read.
+        function say(what) {
+          var el = document.getElementById('boot');
+          if (!el) return;
+          el.textContent = 'This did not start: ' + what + ' Tap here to try again.';
+          el.onclick = go;
+        }
+        window.addEventListener('error', function (e) {
+          var t = e.target;
+          if (t && (t.tagName === 'SCRIPT' || t.tagName === 'LINK')) again();
+          else if (e.message) say(e.message + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '') + '.');
+        }, true);
+        window.addEventListener('unhandledrejection', function (e) {
+          say(String((e.reason && e.reason.message) || e.reason) + '.');
+        });
+        setTimeout(again, 15000);
+      })();
+    </script>
   </body>
 </html>
